@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morphine Studio | لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #111111;
+    --bg-panel: #1a1a1a;
+    --bg-input: #222222;
+    --text-main: #f0f0f0;
+    --text-muted: #888888;
+    --accent: #84dcc6; /* The signature turquoise/teal */
+    --accent-hover: #5bbca4;
+    --border-color: #333333;
+    --font-ui: 'Cairo', sans-serif;
+    --font-brand: 'Bebas Neue', sans-serif;
+    --font-hand: 'Caveat', cursive;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    padding-bottom: 100px;
+    position: relative;
+  }
+
+  /* Cinematic Vignette & Noise Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+    pointer-events: none;
+    z-index: 9999;
+  }
+  
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  header {
+    padding: 30px 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(17, 17, 17, 0.8);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .brand {
+    font-family: var(--font-hand);
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin: 0;
+    letter-spacing: 2px;
+  }
+
+  .status-badge {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  /* Upload Zone */
+  .upload-zone {
+    margin: 60px 0;
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    padding: 60px 20px;
+    text-align: center;
+    background: var(--bg-panel);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .upload-zone:hover, .upload-zone.drag-active {
+    border-color: var(--accent);
+    background: #1e2422;
+  }
+  .upload-zone h2 {
+    font-family: var(--font-brand);
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .upload-zone input { display: none; }
+  
+  .btn-upload {
+    background: var(--accent);
+    color: var(--bg-base);
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: inline-block;
+    cursor: pointer;
+    transition: 0.3s;
+    border: none;
+    font-family: var(--font-ui);
+  }
+  .btn-upload:hover { background: var(--accent-hover); }
+
+  /* Editor Panels */
+  #editor-wrapper { display: none; }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .panel-header {
+    font-family: var(--font-brand);
+    font-size: 2rem;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-header span { color: var(--accent); font-family: var(--font-hand); font-size: 2.5rem; }
+
+  /* Form Elements */
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  
+  input[type="text"], input[type="url"], textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 14px;
+    border-radius: 8px;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    transition: 0.3s;
+    box-sizing: border-box;
+  }
+  
+  input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(132, 220, 198, 0.1);
+  }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  /* Grid Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* Color Pickers */
+  .color-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--bg-input);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+  input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    background: none;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+  .hex-val { font-family: monospace; color: var(--accent); }
+
+  /* Floating Action Bar */
+  .action-bar {
+    position: fixed;
+    bottom: 0; left: 0; width: 100%;
+    background: rgba(26, 26, 26, 0.95);
+    border-top: 1px solid var(--accent);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .action-bar.visible { transform: translateY(0); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn-outline:hover { color: var(--text-main); border-color: var(--text-main); }
+  
+  .section-hint {
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-top: -10px;
+    margin-bottom: 20px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+    <h1 class="brand">Morphine <span style="color:var(--text-main); font-size: 1.2rem; font-family: var(--font-brand);">CONTROL</span></h1>
+    <div class="status-badge" id="status-indicator">في انتظار الملف الأساسي...</div>
+  </div>
+</header>
+
+<div class="container">
+  
+  <!-- Upload Section -->
+  <div class="upload-zone" id="upload-zone">
+    <h2>INITIALIZE PROJECT</h2>
+    <p style="color: var(--text-muted); margin-bottom: 30px;">اسحب وأفلت ملف الـ HTML الخاص بالمشروع هنا، أو اضغط للاختيار</p>
+    <label class="btn-upload" for="file-input">اختر ملف المشروع</label>
+    <input type="file" id="file-input" accept=".html">
+  </div>
+
+  <!-- Editor Section -->
+  <div id="editor-wrapper">
+    
+    <!-- Colors Panel -->
+    <div class="panel">
+      <div class="panel-header"><span>1</span> الهوية البصرية والألوان</div>
+      <span class="section-hint">سيتم تحديث الألوان الأساسية للمشروع.</span>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>اللون المميز (Accent)</label>
+          <div class="color-wrapper">
+            <input type="color" id="color-accent" value="#84dcc6">
+            <span class="hex-val" id="hex-accent">#84dcc6</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>خلفية الموقع الرئيسية</label>
+          <div class="color-wrapper">
+            <input type="color" id="color-bg" value="#222222">
+            <span class="hex-val" id="hex-bg">#222222</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Texts Panel -->
+    <div class="panel">
+      <div class="panel-header"><span>2</span> النصوص الأساسية</div>
+      <div class="form-group">
+        <label>العنوان الرئيسي (Hero Title)</label>
+        <input type="text" id="text-hero-title" placeholder="مثال: MORFI">
+      </div>
+      <div class="form-group">
+        <label>الكلمة المميزة (Highlight/Sub)</label>
+        <input type="text" id="text-hero-sub" placeholder="مثال: Simplify">
+      </div>
+      <div class="form-group">
+        <label>وصف قسم البداية</label>
+        <textarea id="text-hero-desc" placeholder="اكتب النبذة المختصرة هنا..."></textarea>
+      </div>
+    </div>
+
+    <!-- Links Panel -->
+    <div class="panel">
+      <div class="panel-header"><span>3</span> الروابط وحسابات التواصل</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>رابط Instagram</label>
+          <input type="url" id="link-ig" placeholder="https://instagram.com/...">
+        </div>
+        <div class="form-group">
+          <label>رابط TikTok</label>
+          <input type="url" id="link-tt" placeholder="https://tiktok.com/...">
+        </div>
+        <div class="form-group">
+          <label>رقم WhatsApp</label>
+          <input type="text" id="link-wa" placeholder="مثال: 201000000000">
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="text" id="link-email" placeholder="example@gmail.com">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Export Bar -->
+<div class="action-bar" id="action-bar">
+  <button class="btn-outline" id="btn-reset">إلغاء ورفع ملف آخر</button>
+  <button class="btn-upload" id="btn-export">حفظ وتنزيل المشروع المحدث</button>
+</div>
+
+<script>
+  // Variables to hold the parsed document
+  let projectDoc = null;
+  let projectRawHTML = '';
+
+  const uploadZone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('file-input');
+  const editorWrapper = document.getElementById('editor-wrapper');
+  const actionBar = document.getElementById('action-bar');
+  const statusIndicator = document.getElementById('status-indicator');
+
+  // Sync Color Hex text
+  document.getElementById('color-accent').addEventListener('input', function() {
+    document.getElementById('hex-accent').textContent = this.value;
+  });
+  document.getElementById('color-bg').addEventListener('input', function() {
+    document.getElementById('hex-bg').textContent = this.value;
+  });
+
+  // Drag and Drop UI
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-active');
+  });
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('drag-active');
+  });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-active');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.html')) {
+      processFile(file);
+    } else {
+      alert("يرجى رفع ملف HTML صحيح.");
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if(e.target.files.length > 0) {
+      processFile(e.target.files[0]);
+    }
+  });
+
+  function processFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      projectRawHTML = e.target.result;
+      const parser = new DOMParser();
+      projectDoc = parser.parseFromString(projectRawHTML, 'text/html');
+      
+      // Attempt to load existing data into the dashboard
+      extractExistingData();
+
+      // Update UI
+      uploadZone.style.display = 'none';
+      editorWrapper.style.display = 'block';
+      actionBar.classList.add('visible');
+      statusIndicator.textContent = `جاهز للتعديل: ${file.name}`;
+      statusIndicator.style.color = 'var(--accent)';
+      statusIndicator.style.borderColor = 'var(--accent)';
+    };
+    reader.readAsText(file);
+  }
+
+  function extractExistingData() {
+    // Attempt to read CSS variables if they exist in a standard format
+    const accentMatch = projectRawHTML.match(/--accent:\s*(#[0-9a-fA-F]{6});/);
+    if(accentMatch) {
+      document.getElementById('color-accent').value = accentMatch[1];
+      document.getElementById('hex-accent').textContent = accentMatch[1];
+    }
+    
+    // Attempt to extract Hero texts based on standard Morphine classes
+    const heroTitle = projectDoc.querySelector('.hero-title, h1');
+    if(heroTitle) document.getElementById('text-hero-title').value = heroTitle.textContent.trim();
+
+    const heroSub = projectDoc.querySelector('.simplify-word, .hero-sub');
+    if(heroSub) document.getElementById('text-hero-sub').value = heroSub.textContent.trim();
+
+    const heroDesc = projectDoc.querySelector('.hero-desc');
+    if(heroDesc) document.getElementById('text-hero-desc').value = heroDesc.textContent.trim();
+  }
+
+  // Export Logic
+  document.getElementById('btn-export').addEventListener('click', () => {
+    if(!projectDoc) return;
+
+    // 1. Update Texts
+    const heroTitle = projectDoc.querySelector('.hero-title, h1');
+    if(heroTitle) heroTitle.textContent = document.getElementById('text-hero-title').value;
+
+    const heroSub = projectDoc.querySelector('.simplify-word, .hero-sub');
+    if(heroSub) heroSub.textContent = document.getElementById('text-hero-sub').value;
+
+    const heroDesc = projectDoc.querySelector('.hero-desc');
+    if(heroDesc) heroDesc.textContent = document.getElementById('text-hero-desc').value;
+
+    // 2. Update Colors (String replacement for CSS root variables)
+    let finalHTML = projectDoc.documentElement.outerHTML;
+    
+    const newAccent = document.getElementById('color-accent').value;
+    const newBg = document.getElementById('color-bg').value;
+    
+    // Replace standard variables if present
+    finalHTML = finalHTML.replace(/--accent:\s*#[0-9a-fA-F]{3,6}/g, `--accent: ${newAccent}`);
+    finalHTML = finalHTML.replace(/--bg-primary:\s*#[0-9a-fA-F]{3,6}/g, `--bg-primary: ${newBg}`);
+
+    // Create Download Link
+    const blob = new Blob(['<!DOCTYPE html>\n' + finalHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'morphine_updated.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Reset Logic
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    projectDoc = null;
+    projectRawHTML = '';
+    fileInput.value = '';
+    uploadZone.style.display = 'block';
+    editorWrapper.style.display = 'none';
+    actionBar.classList.remove('visible');
+    statusIndicator.textContent = 'في انتظار الملف الأساسي...';
+    statusIndicator.style.color = 'var(--text-muted)';
+    statusIndicator.style.borderColor = 'var(--border-color)';
+  });
+
+</script>
+</body>
+</html>
